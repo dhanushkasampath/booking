@@ -1,0 +1,10 @@
+sudo -i -u postgres
+pqsl
+
+
+
+postgres=# CREATE DATABASE travo;
+CREATE DATABASE
+
+travo=# TABLE customer;
+

@@ -1,0 +1,63 @@
+
+
+sign up endpoint
+
+http://localhost:8088/api/v1/signup
+
+Request Payload
+{
+    "firstName" : "Buddhima",
+    "lastName" : "Kumari",
+    "email": "buddhima112@gmail.com",
+    "password" : "12234",    
+    "dateOfBirth": "1999-04-08 00:00:00",
+    "contactNo": "0702286801",
+    "district": "Matara", 
+    "province" : "Southern",
+    "town": "Matara",
+    "gradeId" : "897"
+}
+
+Response
+
+{
+  "idToken": "[ID_TOKEN]",
+  "email": "[user@example.com]",
+  "refreshToken": "[REFRESH_TOKEN]",
+  "expiresIn": "3600",
+  "localId": "tRcfmLH7..."
+}
+
+this token should be saved in the browser
+=============================================================
+
+login endpoint
+
+http://localhost:8088/api/v1/login
+
+Request Payload
+{    
+    "email": "buddhima112@gmail.com",
+    "password" : "12234"    
+}
+
+
+Response
+
+{
+  "localId": "ZY1rJK0eYLg...",
+  "email": "[user@example.com]",
+  "displayName": "",
+  "idToken": "[ID_TOKEN]",
+  "registered": true,
+  "refreshToken": "[REFRESH_TOKEN]",
+  "expiresIn": "3600"
+}
+
+================================================================
+when calling other apis
+
+Headers
+"Authorization":"Bearer <TOKEN>"
+
+this should come in every request
