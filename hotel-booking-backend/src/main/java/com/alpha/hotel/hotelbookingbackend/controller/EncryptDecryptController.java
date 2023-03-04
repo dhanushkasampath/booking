@@ -2,8 +2,10 @@ package com.alpha.hotel.hotelbookingbackend.controller;
 
 import com.alpha.hotel.hotelbookingbackend.dto.EncryptDecryptRequestDto;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
+import com.alpha.hotel.hotelbookingbackend.service.EmailService;
 import com.alpha.hotel.hotelbookingbackend.service.EncryptDecryptService;
 import com.alpha.hotel.hotelbookingbackend.util.ConversionTypeEnum;
+import com.alpha.hotel.hotelbookingbackend.util.EmailConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,8 @@ public class EncryptDecryptController {
     private String secretKey;
     @Autowired
     private EncryptDecryptService encryptDecryptService;
+    @Autowired
+    private EmailService emailService;
 
     @GetMapping(path = "/convert")
     public ResponseEntity<String> encryptDecrypt(
@@ -35,5 +39,12 @@ public class EncryptDecryptController {
             logger.error("Invalid Conversion Type:{}", conversionType);
             throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Invalid Conversion Type");
         }
+    }
+
+    @GetMapping(path = "/test-email")
+    public ResponseEntity<String> testEmail() throws HotelBookingException {
+        String content = String.format(EmailConstants.INVITATION_EMAIL_CONTENT, "https://www.digitalocean.com/community/tutorials/javamail-example-send-mail-in-java-smtp");
+        emailService.sendEmail("imesharuwanpathirana18@gmail.com", content, "Forget Password");
+        return new ResponseEntity<>("", HttpStatus.OK);
     }
 }

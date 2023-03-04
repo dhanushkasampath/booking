@@ -12,4 +12,6 @@ public interface UserService {
     UserLoginResponseDto userGeneralLogin(UserLoginRequestDto userLoginRequestDto) throws HotelBookingException;
 
     void userSpecialLogin(UserLoginRequestDto userLoginRequestDto, UserLoginTypeEnum forgetPasswordLogin) throws HotelBookingException;
+
+    void forgetPassword(String email) throws HotelBookingException;
 }
