@@ -12,6 +12,7 @@ import com.alpha.hotel.hotelbookingbackend.repo.UserRepository;
 import com.alpha.hotel.hotelbookingbackend.service.EncryptDecryptService;
 import com.alpha.hotel.hotelbookingbackend.service.UserService;
 import com.alpha.hotel.hotelbookingbackend.util.JwtTokenTypeEnum;
+import com.alpha.hotel.hotelbookingbackend.util.UserLoginTypeEnum;
 import com.alpha.hotel.hotelbookingbackend.util.VarList;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -58,7 +59,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserLoginResponseDto userGeneralLogin(UserLoginRequestDto userLoginRequestDto) throws HotelBookingException {
-        logger.debug("userLogin method started. Login requested user_name : {}", userLoginRequestDto.getUsername());
+        logger.debug("userGeneralLogin method started. Login requested user_name : {}", userLoginRequestDto.getUsername());
 
         String providedPassword = userLoginRequestDto.getPassword();
         String password = encryptDecryptService.encrypt(providedPassword, secretKey);
@@ -79,5 +80,44 @@ public class UserServiceImpl implements UserService {
             logger.debug("user successfully logged in.");
             return new UserLoginResponseDto(token);
         }
+    }
+
+    @Override
+    public void userSpecialLogin(UserLoginRequestDto userLoginRequestDto, UserLoginTypeEnum userLoginType) throws HotelBookingException {
+        logger.debug("userSpecialLogin method started. Login requested user_name : {}", userLoginRequestDto.getUsername());
+        User user = null;
+        String loginType = userLoginType.toString();
+        String providedPassword = userLoginRequestDto.getPassword();//should be an encoded one
+//        String password = encryptDecryptService.decrypt(providedPassword, secretKey);
+//        userLoginRequestDto.setPassword(password);
+        String providedUserName = userLoginRequestDto.getUsername();
+//        userLoginRequestDto.setUsername(username);
+
+        if ( userLoginType.equals(UserLoginTypeEnum.FIRST_LOGIN) ) {
+
+            user = userRepository.findByUserName(providedUserName);
+
+            if ( user.getPassword() != null ) {
+                logger.error("Password already exist for user, userId: {}, Access Denied", user.getUserId());
+                throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "Password already exist for user");
+            }
+
+        } else if ( userLoginType.equals(UserLoginTypeEnum.FORGET_PASSWORD_LOGIN) ) {
+            user = userRepository.findOneByEmail(providedUserName);
+            if ( user != null && !user.isPasswordCreated() ) {
+                logger.error("User has not completed initial login, userId: {}", user.getUserId());
+                throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "User has not completed initial login");
+            }
+        }
+
+        if ( user != null ) {
+            updatePassword(providedPassword, user);
+        } else {
+            logger.error("User authentication is invalid. Please try again.");
+            throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "User authentication is invalid. Please try again.");
+        }
+    }
+
+    private void updatePassword(String providedPassword, User user) {
     }
 }

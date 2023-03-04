@@ -39,6 +39,7 @@ public class User extends AbstractEntity {
     private String district;
     private String town;
     private String email;
+    private boolean passwordCreated;
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private List<Message> messageList;

@@ -46,7 +46,7 @@ public class UserController {
 
         if ( userLoginType.toString().equals(UserLoginTypeEnum.GENERAL_LOGIN.toString()) ) {
             UserLoginResponseDto userLoginResponseDto = userService.userGeneralLogin(userLoginRequestDto);
-            logger.info("User authenticated successfully for username : {}", userLoginRequestDto.getUsername());
+            logger.debug("User authenticated successfully for username : {}", userLoginRequestDto.getUsername());
             return new ResponseEntity <>(userLoginResponseDto, HttpStatus.OK);
         } else if ( userLoginType.toString().equals(UserLoginTypeEnum.FIRST_LOGIN.toString()) ) {
 
@@ -60,13 +60,10 @@ public class UserController {
 
         } else if ( userLoginType.toString().equals(UserLoginTypeEnum.FORGET_PASSWORD_LOGIN.toString()) ) {
 
-//            auditService.initializeAuditData("Login to set a new password for forget password with user name " + userLoginRequestDto.getUsername(), request);
-//
-//            userService.userLogin(userLoginRequestDto, LoginApiType.FORGET_PASSWORD_LOGIN, request);
-//
-//            logger.info("Forget password change successful for username : {}", userLoginRequestDto.getUsername());
-//            auditService.create(Constants.SUCCESS);
-//            return new ResponseEntity <>(HttpStatus.OK);
+            logger.debug("Login to set a new password for forget password with userName:{}", userLoginRequestDto.getUsername());
+            userService.userSpecialLogin(userLoginRequestDto, UserLoginTypeEnum.FORGET_PASSWORD_LOGIN);
+            logger.debug("Password updated successfully for username : {}", userLoginRequestDto.getUsername());
+            return new ResponseEntity <>(HttpStatus.OK);
 
         } else {
             logger.error("Provided login type is not valid:{}", userLoginType);
