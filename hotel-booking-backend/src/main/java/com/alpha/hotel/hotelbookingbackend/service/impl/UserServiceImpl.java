@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter;
 @Service
 public class UserServiceImpl implements UserService {
     private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-    @Value("${customer.password.encryption.key}")
+    @Value("${user.password.encryption.key}")
     private String secretKey;
     @Autowired
     private CustomerRepository customerRepository;
