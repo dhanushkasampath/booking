@@ -42,9 +42,10 @@ public class EncryptDecryptController {
     }
 
     @GetMapping(path = "/test-email")
-    public ResponseEntity<String> testEmail() throws HotelBookingException {
+    public ResponseEntity<String> testEmail(@RequestParam
+                                                String toEmailAddress) throws HotelBookingException {
         String content = String.format(EmailConstants.INVITATION_EMAIL_CONTENT, "https://www.digitalocean.com/community/tutorials/javamail-example-send-mail-in-java-smtp");
-        emailService.sendEmail("imesharuwanpathirana18@gmail.com", content, "Forget Password");
+        emailService.sendEmail(toEmailAddress, content, "Forget Password");
         return new ResponseEntity<>("", HttpStatus.OK);
     }
 }

@@ -22,8 +22,8 @@ public class EmailServiceImpl implements EmailService {
     @Value( "${email.server.username}" )
     private String emailServerUsername;
 
-    @Value( "${email.server.password}" )
-    private String emailServerPassword;
+    @Value( "${email.server.app.password}" )
+    private String emailServerAppPassword;
 
     @Value( "${email.server.host}" )
     private String emailServerHost;
@@ -40,26 +40,33 @@ public class EmailServiceImpl implements EmailService {
     @Value( "${email.internal.address}" )
     private String emailInternalAddress;
 
+    @Value( "${email.server.protocol}" )
+    private String emailServerProtocol;
+
+    @Value( "${email.server.ssl.factory}" )
+    private String emailServerSslFactory;
+
     @Override
     public void sendEmail(String toAddress, String content, String topic) throws HotelBookingException {
         logger.debug("Sending email to:{} with topic:{}", toAddress, topic);
         Properties prop = new Properties();
         prop.put("mail.smtp.host", emailServerHost);
         prop.put("mail.smtp.port", emailServerPort);
+        prop.put("mail.smtp.socketFactory.class", emailServerSslFactory);
         prop.put("mail.smtp.auth", emailServerAuth);
-        prop.put("mail.smtp.starttls.enable", emailServerTtlsEnable); //TLS
+        prop.put("mail.smtp.starttls.enable", emailServerTtlsEnable);
+        prop.put("mail.smtp.ssl.protocols", emailServerProtocol);
 
-        Session session = Session.getInstance(prop,
+        Session session = Session.getDefaultInstance(prop,
                 new javax.mail.Authenticator() {
                     @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(emailServerUsername, emailServerPassword);
+                        return new PasswordAuthentication(emailServerUsername, emailServerAppPassword);
                     }
                 });
-
         try {
 
-            Message message = new MimeMessage(session);
+            MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(emailInternalAddress));
             message.setRecipients(
                     Message.RecipientType.TO,
@@ -78,18 +85,14 @@ public class EmailServiceImpl implements EmailService {
                             "margin: 40px auto; color: #868686 \"> " + content +
                             "   </div>    <div style=\"text-align: center; max-width: 700px; margin: 40px auto; " +
                             "color: #868686 \">        <p style=\"font-size: 17px;\">          " +
-                            "  <br>Yours sincerely,<br>            ADL DTE Team<br>       " +
-                            "     <br>Contact Information:<br>            E-mail : " + emailInternalAddress + "<br>    " +
+                            "  <br>Yours sincerely,<br>            Angular Whiplash Team<br>       " +
                             "    </p>    </div></div>",
                     "text/html");
-
             Transport.send(message);
-
-            logger.info("Successfully sent the email");
-
+            logger.debug("Successfully sent the email");
         }
         catch ( Exception e ) {
-            logger.error("Failed to send the email confirmation of:{}", topic);
+            logger.error("Failed to send the email confirmation of:{}", topic, e);
             throw new HotelBookingException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Failed to send the email confirmation of:%s", topic));
         }
     }
