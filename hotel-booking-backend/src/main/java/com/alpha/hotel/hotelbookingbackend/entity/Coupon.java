@@ -16,7 +16,7 @@ import javax.persistence.*;
 public class Coupon {
 
     @Id
-    private String couponId;
+    private Long couponId;
     private String title;
     private float discount;
 

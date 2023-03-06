@@ -18,7 +18,7 @@ public class Hotel {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String hotelId;
+    private Long hotelId;
     private String name;
     private String province;
     private String district;

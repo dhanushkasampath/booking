@@ -17,7 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Table(name = "user",
+@Table(name = "reg_user",
         uniqueConstraints = {
                 @UniqueConstraint(name = Constants.DUPLICATE_USER_NAME,
                         columnNames = {"username"}),
@@ -46,6 +46,6 @@ public class User extends AbstractEntity {
             cascade = CascadeType.ALL)
     private List<Message> messageList;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "userTypeId", nullable = false)
+    @JoinColumn(name = "user_type_id", nullable = false)
     private UserType userType;
 }
