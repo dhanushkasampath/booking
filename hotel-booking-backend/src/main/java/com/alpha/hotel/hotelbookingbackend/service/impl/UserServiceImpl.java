@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
         User user = map(userDTO, User.class);
         user.setPasswordCreated(false);
         user.setActive(false);
-//        user.setUserType(userTypeService.getUserTypeByType(UserTypeEnum.CUSTOMER));
+        user.setUserType(userTypeService.getUserTypeByType(UserTypeEnum.CUSTOMER));
         User createdUser = persist(user);
         //send email
         generateJwtTokenAndSendEmail(user);
@@ -81,13 +81,13 @@ public class UserServiceImpl implements UserService {
         }
         catch ( DataIntegrityViolationException e ) {
 
-            if ( ("user." + Constants.DUPLICATE_USER_NAME).equals((( org.hibernate.exception.ConstraintViolationException ) e.getCause()).getConstraintName()) ) {
-                logger.error("User already exist with username {}, Enter a unique username", user.getUserName(), e);
+            if ( (Constants.DUPLICATE_USER_NAME.toLowerCase()).equals((( org.hibernate.exception.ConstraintViolationException ) e.getCause()).getConstraintName()) ) {
+                logger.error("User already exist with username:{}, Enter a unique username", user.getUserName(), e);
                 throw new HotelBookingException(HttpStatus.BAD_REQUEST, String.format("User already exist with username:%s, Enter a unique username", user.getUserName()));
             }
 
-            if ( ("user." + Constants.DUPLICATE_EMAIL).equals((( org.hibernate.exception.ConstraintViolationException ) e.getCause()).getConstraintName()) ) {
-                logger.error("User already exist with email {} ,Enter a unique email {}", user.getEmail(), e);
+            if ( (Constants.DUPLICATE_EMAIL.toLowerCase()).equals((( org.hibernate.exception.ConstraintViolationException ) e.getCause()).getConstraintName()) ) {
+                logger.error("User already exist with email:{} ,Enter a unique email {}", user.getEmail(), e);
                 throw new HotelBookingException(HttpStatus.BAD_REQUEST, String.format("User already exist with email:%s, Enter a unique email", user.getEmail()));
             }
 

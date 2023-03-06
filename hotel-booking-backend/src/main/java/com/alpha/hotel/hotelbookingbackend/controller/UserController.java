@@ -74,7 +74,7 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping(value = "/create")
+    @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserResponseDto> createUser(
             @Valid
             @RequestBody UserDto userDto) throws HotelBookingException {

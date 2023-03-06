@@ -16,7 +16,7 @@ import java.util.List;
 public class UserType {
     @Id
     private Long id;
-
+    @Enumerated( EnumType.STRING )
     private UserTypeEnum userType;
     @OneToMany(mappedBy = "userType", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
