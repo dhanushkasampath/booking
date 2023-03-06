@@ -1,4 +1,4 @@
-package com.alpha.hotel.hotelbookingbackend.repo;
+package com.alpha.hotel.hotelbookingbackend.repository;
 
 import com.alpha.hotel.hotelbookingbackend.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;

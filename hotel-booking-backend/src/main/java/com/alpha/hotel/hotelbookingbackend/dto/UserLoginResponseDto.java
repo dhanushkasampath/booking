@@ -10,9 +10,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserLoginResponseDto implements Serializable {
-
-    private static final long serialVersionUID = 806331910569472825L;
-
+    private static final long serialVersionUID = -4444225008565656895L;
     private String token;
 
 }

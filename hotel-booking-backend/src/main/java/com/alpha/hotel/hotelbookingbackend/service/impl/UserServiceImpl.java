@@ -4,31 +4,27 @@ import com.alpha.hotel.hotelbookingbackend.config.security.UserJwtTokenCreator;
 import com.alpha.hotel.hotelbookingbackend.dto.UserDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginRequestDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginResponseDto;
-import com.alpha.hotel.hotelbookingbackend.entity.Customer;
 import com.alpha.hotel.hotelbookingbackend.entity.User;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
-import com.alpha.hotel.hotelbookingbackend.repo.CustomerRepository;
-import com.alpha.hotel.hotelbookingbackend.repo.UserRepository;
+import com.alpha.hotel.hotelbookingbackend.repository.CustomerRepository;
+import com.alpha.hotel.hotelbookingbackend.repository.UserRepository;
 import com.alpha.hotel.hotelbookingbackend.service.EmailService;
 import com.alpha.hotel.hotelbookingbackend.service.EncryptDecryptService;
 import com.alpha.hotel.hotelbookingbackend.service.UserService;
-import com.alpha.hotel.hotelbookingbackend.util.EmailConstants;
-import com.alpha.hotel.hotelbookingbackend.util.JwtTokenTypeEnum;
-import com.alpha.hotel.hotelbookingbackend.util.UserLoginTypeEnum;
-import com.alpha.hotel.hotelbookingbackend.util.VarList;
+import com.alpha.hotel.hotelbookingbackend.service.UserTypeService;
+import com.alpha.hotel.hotelbookingbackend.util.*;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Service
@@ -38,6 +34,8 @@ public class UserServiceImpl implements UserService {
     private String secretKey;
     @Value( "${invitation.email.forget.password.url}" )
     private String forgetPasswordLink;
+    @Value( "${invitation.email.initial.login.url}" )
+    private String initialLoginUrl;
     @Autowired
     private CustomerRepository customerRepository;
     @Autowired
@@ -52,18 +50,51 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private UserTypeService userTypeService;
 
     @Override
-    public String saveCustomer(UserDto userDTO) {
-        if (customerRepository.existsByEmail(userDTO.getEmail())) {
-            return VarList.RSP_DUPLICATED;
-        } else {
-            Customer customer = modelMapper.map(userDTO, Customer.class);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-            customer.setDateOfBirth(LocalDateTime.parse(userDTO.getDateOfBirth(), formatter));
-            customerRepository.save(customer);
-            return VarList.RSP_SUCCESS;
+    public User create(UserDto userDTO) throws HotelBookingException {
+        logger.debug("create method started");
+        User user = map(userDTO, User.class);
+        user.setPasswordCreated(false);
+        user.setActive(false);
+//        user.setUserType(userTypeService.getUserTypeByType(UserTypeEnum.CUSTOMER));
+        User createdUser = persist(user);
+        //send email
+        generateJwtTokenAndSendEmail(user);
+        logger.debug("create method ended");
+        return createdUser;
+    }
+
+    private void generateJwtTokenAndSendEmail(User user) throws HotelBookingException {
+        String token = userJwtTokenCreator.generateJwtToken(user, JwtTokenTypeEnum.INVITATION_TOKEN);
+        String firstLoginLink = initialLoginUrl.concat(encodeValue(token));
+//        http://localhost:3000/#/auth/DFDSFEEgwewGRWHfr_FsdgsfgSGSHAFGTHHFDSGSg
+        emailService.sendEmail(user.getEmail(), String.format(EmailConstants.INVITATION_EMAIL_CONTENT, firstLoginLink), "First time verification");
+    }
+
+    private User persist(User user) throws HotelBookingException {
+        User userCreated = null;
+        try {
+            userCreated = userRepository.save(user);
         }
+        catch ( DataIntegrityViolationException e ) {
+
+            if ( ("user." + Constants.DUPLICATE_USER_NAME).equals((( org.hibernate.exception.ConstraintViolationException ) e.getCause()).getConstraintName()) ) {
+                logger.error("User already exist with username {}, Enter a unique username", user.getUserName(), e);
+                throw new HotelBookingException(HttpStatus.BAD_REQUEST, String.format("User already exist with username:%s, Enter a unique username", user.getUserName()));
+            }
+
+            if ( ("user." + Constants.DUPLICATE_EMAIL).equals((( org.hibernate.exception.ConstraintViolationException ) e.getCause()).getConstraintName()) ) {
+                logger.error("User already exist with email {} ,Enter a unique email {}", user.getEmail(), e);
+                throw new HotelBookingException(HttpStatus.BAD_REQUEST, String.format("User already exist with email:%s, Enter a unique email", user.getEmail()));
+            }
+
+            logger.error("Constraint violation for user save request {}, {} ", e.getLocalizedMessage(), e);
+            throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Constraint violation for user");
+        }
+        return userCreated;
     }
 
     @Override
@@ -140,6 +171,18 @@ public class UserServiceImpl implements UserService {
         else {
             logger.error("User with email:{} not found.", email);
             throw new HotelBookingException(HttpStatus.BAD_REQUEST, String.format("User with email:%s not found.", email));
+        }
+    }
+
+    @Override
+    public User findOne(Long userId) throws HotelBookingException {
+        Optional < User > user = userRepository.findById(userId);
+
+        if ( user.isPresent() ) {
+            return user.get();
+        } else {
+            logger.info("User not found for user id {}", user);
+            throw new HotelBookingException(HttpStatus.NOT_FOUND, "User not found");
         }
     }
 

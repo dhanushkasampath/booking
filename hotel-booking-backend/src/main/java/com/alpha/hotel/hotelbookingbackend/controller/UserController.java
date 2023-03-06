@@ -1,13 +1,13 @@
 package com.alpha.hotel.hotelbookingbackend.controller;
 
-import com.alpha.hotel.hotelbookingbackend.dto.ResponseDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginRequestDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginResponseDto;
+import com.alpha.hotel.hotelbookingbackend.dto.UserResponseDto;
+import com.alpha.hotel.hotelbookingbackend.entity.User;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
 import com.alpha.hotel.hotelbookingbackend.service.UserService;
 import com.alpha.hotel.hotelbookingbackend.util.UserLoginTypeEnum;
-import com.alpha.hotel.hotelbookingbackend.util.VarList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +26,6 @@ public class UserController {
     private final Logger logger = LoggerFactory.getLogger(UserController.class);
     @Autowired
     private UserService userService;
-
-    @Autowired
-    private ResponseDto responseDTO;
 
     @PostMapping(path = "/login",
             consumes = MediaType.APPLICATION_JSON_VALUE,
@@ -77,32 +74,14 @@ public class UserController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping(value = "/save-customer")
-    public ResponseEntity<ResponseDto> saveEmployee(@RequestBody UserDto userDTO) {
-        ResponseDto responseDTO = new ResponseDto();
-        try {
-            String res = userService.saveCustomer(userDTO);
-            if (res.equals("00")) {
-                responseDTO.setCode(VarList.RSP_SUCCESS);
-                responseDTO.setMessage("Success");
-                responseDTO.setContent(userDTO);
-                return new ResponseEntity<>(responseDTO, HttpStatus.ACCEPTED);
-            } else if (res.equals("06")) {
-                responseDTO.setCode(VarList.RSP_DUPLICATED);
-                responseDTO.setMessage("Employee Registered");
-                responseDTO.setContent(userDTO);
-                return new ResponseEntity<>(responseDTO, HttpStatus.BAD_REQUEST);
-            } else {
-                responseDTO.setCode(VarList.RSP_FAIL);
-                responseDTO.setMessage("Error");
-                responseDTO.setContent(null);
-                return new ResponseEntity<>(responseDTO, HttpStatus.BAD_REQUEST);
-            }
-        } catch (Exception ex) {
-            responseDTO.setCode(VarList.RSP_ERROR);
-            responseDTO.setMessage(ex.getMessage());
-            responseDTO.setContent(null);
-            return new ResponseEntity<>(responseDTO, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    @PostMapping(value = "/create")
+    public ResponseEntity<UserResponseDto> createUser(
+            @Valid
+            @RequestBody UserDto userDto) throws HotelBookingException {
+        logger.info("Received request to create a user");
+        User createdUser = userService.create(userDto);
+        UserResponseDto userResponseDto = userService.map(createdUser, UserResponseDto.class);
+        logger.info("Return response after creating the user");
+        return new ResponseEntity<>(userResponseDto, HttpStatus.OK);
     }
 }

@@ -29,7 +29,7 @@ public class UserJwtTokenCreator {
     @Value("${security.jwt.sign.key}")
     private String jwtSignKey;
 
-    @Value("${user.default.passKey}")
+    @Value("${user.default.password}")
     private String passwordKey;
 
     @Value("${security.jwt.expiretime.hours}")

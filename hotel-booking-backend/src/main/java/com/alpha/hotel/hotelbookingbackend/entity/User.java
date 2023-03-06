@@ -28,7 +28,8 @@ import java.util.List;
 public class User extends AbstractEntity {
 
     @Id
-    private int userId;
+    @GeneratedValue
+    private Long userId;
     private String userName;
     private String firstName;
     private String lastName;
@@ -40,12 +41,10 @@ public class User extends AbstractEntity {
     private String town;
     private String email;
     private boolean passwordCreated;
+    private boolean isActive;
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private List<Message> messageList;
-    @Column(nullable = false,
-            columnDefinition = "BIT(1) NOT NULL DEFAULT b'1'")
-    private boolean isActive = true;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "userTypeId", nullable = false)
     private UserType userType;

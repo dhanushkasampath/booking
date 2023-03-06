@@ -26,7 +26,14 @@ Response
 invitation email will be sent
 #####################
 To-Do
-create end point to encrypt and decrypt a given string
+1.[DONE] create end point to encrypt and decrypt a given string
+2.create ui link to enter password and confirm password. ->then submit btn click should call the below end point
+
+http://localhost:8088/api/v1/user/login?userLoginType=INITIAL_LOGIN
+{
+    "userName":"David@gmail.com", email or username
+    "password":"EWESADRFDSFGDSDGSDG"  <-have to encode by ui
+}
 
 
 
