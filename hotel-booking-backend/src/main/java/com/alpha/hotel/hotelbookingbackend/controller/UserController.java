@@ -37,26 +37,26 @@ public class UserController {
             @RequestBody
             UserLoginRequestDto userLoginRequestDto, HttpServletRequest request) throws HotelBookingException {
 
-        logger.info("Request received to authenticate, username : {} ", userLoginRequestDto.getUsername());
+        logger.info("Request received to authenticate, username : {} ", userLoginRequestDto.getUserName());
 
         if (userLoginType.toString().equals(UserLoginTypeEnum.GENERAL_LOGIN.toString())) {
 
             UserLoginResponseDto userLoginResponseDto = userService.userGeneralLogin(userLoginRequestDto);
-            logger.debug("User authenticated successfully for username : {}", userLoginRequestDto.getUsername());
+            logger.debug("User authenticated successfully for username : {}", userLoginRequestDto.getUserName());
             return new ResponseEntity<>(userLoginResponseDto, HttpStatus.OK);
 
         } else if (userLoginType.toString().equals(UserLoginTypeEnum.INITIAL_LOGIN.toString())) {
 
-            logger.debug("Login for the first time with user name " + userLoginRequestDto.getUsername());
+            logger.debug("Login for the first time with user name " + userLoginRequestDto.getUserName());
             userService.userSpecialLogin(userLoginRequestDto, UserLoginTypeEnum.INITIAL_LOGIN);
-            logger.debug("Initial login successfully completed for username : {}", userLoginRequestDto.getUsername());
+            logger.debug("Initial login successfully completed for username : {}", userLoginRequestDto.getUserName());
             return new ResponseEntity<>(HttpStatus.OK);
 
         } else if (userLoginType.toString().equals(UserLoginTypeEnum.FORGET_PASSWORD_LOGIN.toString())) {
 
-            logger.debug("Login to set a new password for forget password with userName:{}", userLoginRequestDto.getUsername());
+            logger.debug("Login to set a new password for forget password with userName:{}", userLoginRequestDto.getUserName());
             userService.userSpecialLogin(userLoginRequestDto, UserLoginTypeEnum.FORGET_PASSWORD_LOGIN);
-            logger.debug("Password updated successfully for username : {}", userLoginRequestDto.getUsername());
+            logger.debug("Password updated successfully for username : {}", userLoginRequestDto.getUserName());
             return new ResponseEntity<>(HttpStatus.OK);
 
         } else {
@@ -75,13 +75,12 @@ public class UserController {
     }
 
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<UserResponseDto> createUser(
+    public ResponseEntity<UserDto> createUser(
             @Valid
             @RequestBody UserDto userDto) throws HotelBookingException {
         logger.info("Received request to create a user");
-        User createdUser = userService.create(userDto);
-        UserResponseDto userResponseDto = userService.map(createdUser, UserResponseDto.class);
+        userService.create(userDto);
         logger.info("Return response after creating the user");
-        return new ResponseEntity<>(userResponseDto, HttpStatus.OK);
+        return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 }

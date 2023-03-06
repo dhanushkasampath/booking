@@ -99,11 +99,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserLoginResponseDto userGeneralLogin(UserLoginRequestDto userLoginRequestDto) throws HotelBookingException {
-        logger.debug("userGeneralLogin method started. Login requested user_name : {}", userLoginRequestDto.getUsername());
+        logger.debug("userGeneralLogin method started. Login requested user_name : {}", userLoginRequestDto.getUserName());
 
         String providedEncryptedPassword = userLoginRequestDto.getPassword();
 //        String password = encryptDecryptService.encrypt(providedEncryptedPassword, secretKey);
-        String userNameProvided = userLoginRequestDto.getUsername();
+        String userNameProvided = userLoginRequestDto.getUserName();
         User user = userRepository.findByUserName(userNameProvided);
 
         if (user == null) {
@@ -113,7 +113,7 @@ public class UserServiceImpl implements UserService {
 
         String persistPassword = user.getPassword();//this is already an encrypted one
         if (Boolean.FALSE.equals(passwordEncoder.matches(providedEncryptedPassword, persistPassword))) {
-            logger.error("Password not matched for user name:{}", userLoginRequestDto.getUsername());
+            logger.error("Password not matched for user name:{}", userLoginRequestDto.getUserName());
             throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "Invalid User Credentials");
         } else {
             String token = userJwtTokenCreator.generateJwtToken(user, JwtTokenTypeEnum.AUTHORIZED_TOKEN);
@@ -124,10 +124,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void userSpecialLogin(UserLoginRequestDto userLoginRequestDto, UserLoginTypeEnum userLoginType) throws HotelBookingException {
-        logger.debug("userSpecialLogin method started. Login requested user_name : {}", userLoginRequestDto.getUsername());
+        logger.debug("userSpecialLogin method started. Login requested user_name : {}", userLoginRequestDto.getUserName());
         User user = null;
         String providedEncryptedPassword = userLoginRequestDto.getPassword();//should be an encoded one
-        String providedUserName = userLoginRequestDto.getUsername();
+        String providedUserName = userLoginRequestDto.getUserName();
 
         if ( userLoginType.equals(UserLoginTypeEnum.INITIAL_LOGIN) ) {
 

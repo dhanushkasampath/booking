@@ -11,7 +11,7 @@ public class UserLoginRequestDto implements Serializable {
     private static final long serialVersionUID = 5595304138483883021L;
     @NotNull(message = "User authentication is invalid. Please try again.")
     @NotEmpty(message = "User authentication is invalid. Please try again.")
-    private String username;
+    private String userName;
 
     @NotNull(message = "User authentication is invalid. Please try again.")
     @NotEmpty(message = "User authentication is invalid. Please try again.")

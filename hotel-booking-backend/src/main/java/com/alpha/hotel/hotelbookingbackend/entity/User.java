@@ -6,13 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
-@EqualsAndHashCode(callSuper = true)
+@ToString(exclude = "userType")
+@EqualsAndHashCode(callSuper = true, exclude = "userType")
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
