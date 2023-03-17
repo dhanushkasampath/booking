@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
 
-    @Query(value = "SELECT u FROM User u WHERE u.userName = ?1")
+    @Query(value = "SELECT u FROM User u WHERE u.userName = :username")
     User findByUserName(@Param("username") String userNameProvided);
     User findOneByEmail(String providedUserName);
 

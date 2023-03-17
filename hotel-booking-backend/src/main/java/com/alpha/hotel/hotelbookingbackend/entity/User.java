@@ -26,7 +26,6 @@ import java.util.List;
                 @UniqueConstraint(name = Constants.DUPLICATE_EMAIL,
                         columnNames = {"email"})
         })
-@Where(clause = "is_deleted = 0")
 public class User extends AbstractEntity {
 
     @Id
@@ -42,8 +41,6 @@ public class User extends AbstractEntity {
     private String district;
     private String town;
     private String email;
-    private boolean passwordCreated;
-    private boolean isActive;
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY,
             cascade = CascadeType.ALL)
     private List<Message> messageList;

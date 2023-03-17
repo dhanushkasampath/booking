@@ -24,7 +24,4 @@ public abstract class AbstractEntity {
             nullable = false)
     private LocalDateTime lastModifiedDate;
 
-    @ColumnDefault("false")
-    private boolean isDeleted;
-
 }

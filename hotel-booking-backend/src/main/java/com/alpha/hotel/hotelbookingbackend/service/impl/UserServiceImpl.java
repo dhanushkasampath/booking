@@ -20,11 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -32,9 +33,9 @@ public class UserServiceImpl implements UserService {
     private final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
     @Value("${user.password.encryption.key}")
     private String secretKey;
-    @Value( "${invitation.email.forget.password.url}" )
+    @Value("${invitation.email.forget.password.url}")
     private String forgetPasswordLink;
-    @Value( "${invitation.email.initial.login.url}" )
+    @Value("${invitation.email.initial.login.url}")
     private String initialLoginUrl;
     @Autowired
     private CustomerRepository customerRepository;
@@ -47,18 +48,14 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private EncryptDecryptService encryptDecryptService;
     @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
     private EmailService emailService;
     @Autowired
     private UserTypeService userTypeService;
 
     @Override
-    public User create(UserDto userDTO) throws HotelBookingException {
+    public User create(UserDto userDTO) throws HotelBookingException, UnsupportedEncodingException {
         logger.debug("create method started");
         User user = map(userDTO, User.class);
-        user.setPasswordCreated(false);
-        user.setActive(false);
         user.setUserType(userTypeService.getUserTypeByType(UserTypeEnum.CUSTOMER));
         User createdUser = persist(user);
         //send email
@@ -67,7 +64,7 @@ public class UserServiceImpl implements UserService {
         return createdUser;
     }
 
-    private void generateJwtTokenAndSendEmail(User user) throws HotelBookingException {
+    private void generateJwtTokenAndSendEmail(User user) throws HotelBookingException, UnsupportedEncodingException {
         String token = userJwtTokenCreator.generateJwtToken(user, JwtTokenTypeEnum.INVITATION_TOKEN);
         String firstLoginLink = initialLoginUrl.concat(encodeValue(token));
 //        http://localhost:3000/#/auth/DFDSFEEgwewGRWHfr_FsdgsfgSGSHAFGTHHFDSGSg
@@ -78,15 +75,14 @@ public class UserServiceImpl implements UserService {
         User userCreated = null;
         try {
             userCreated = userRepository.save(user);
-        }
-        catch ( DataIntegrityViolationException e ) {
+        } catch (DataIntegrityViolationException e) {
 
-            if ( (Constants.DUPLICATE_USER_NAME.toLowerCase()).equals((( org.hibernate.exception.ConstraintViolationException ) e.getCause()).getConstraintName()) ) {
+            if ((Constants.DUPLICATE_USER_NAME.toLowerCase()).equals(((org.hibernate.exception.ConstraintViolationException) e.getCause()).getConstraintName())) {
                 logger.error("User already exist with username:{}, Enter a unique username", user.getUserName(), e);
                 throw new HotelBookingException(HttpStatus.BAD_REQUEST, String.format("User already exist with username:%s, Enter a unique username", user.getUserName()));
             }
 
-            if ( (Constants.DUPLICATE_EMAIL.toLowerCase()).equals((( org.hibernate.exception.ConstraintViolationException ) e.getCause()).getConstraintName()) ) {
+            if ((Constants.DUPLICATE_EMAIL.toLowerCase()).equals(((org.hibernate.exception.ConstraintViolationException) e.getCause()).getConstraintName())) {
                 logger.error("User already exist with email:{} ,Enter a unique email {}", user.getEmail(), e);
                 throw new HotelBookingException(HttpStatus.BAD_REQUEST, String.format("User already exist with email:%s, Enter a unique email", user.getEmail()));
             }
@@ -112,7 +108,7 @@ public class UserServiceImpl implements UserService {
         }
 
         String persistPassword = user.getPassword();//this is already an encrypted one
-        if (Boolean.FALSE.equals(passwordEncoder.matches(providedEncryptedPassword, persistPassword))) {
+        if (!providedEncryptedPassword.equalsIgnoreCase(persistPassword)) {
             logger.error("Password not matched for user name:{}", userLoginRequestDto.getUserName());
             throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "Invalid User Credentials");
         } else {
@@ -129,24 +125,25 @@ public class UserServiceImpl implements UserService {
         String providedEncryptedPassword = userLoginRequestDto.getPassword();//should be an encoded one
         String providedUserName = userLoginRequestDto.getUserName();
 
-        if ( userLoginType.equals(UserLoginTypeEnum.INITIAL_LOGIN) ) {
+        if (userLoginType.equals(UserLoginTypeEnum.INITIAL_LOGIN)) {
 
             user = userRepository.findByUserName(providedUserName);
 
-            if ( user.getPassword() != null ) {
+            if (user.getPassword() != null) {
                 logger.error("Password already exist for user, userId: {}, Access Denied", user.getUserId());
                 throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "Password already exist for user");
             }
 
-        } else if ( userLoginType.equals(UserLoginTypeEnum.FORGET_PASSWORD_LOGIN) ) {
+        } else if (userLoginType.equals(UserLoginTypeEnum.FORGET_PASSWORD_LOGIN)) {
             user = userRepository.findOneByEmail(providedUserName);
-            if ( user != null && !user.isPasswordCreated() ) {
+            if (user != null) {
+//            if ( user != null && !user.isPasswordCreated() ) {
                 logger.error("User has not completed initial login, userId: {}", user.getUserId());
                 throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "User has not completed initial login");
             }
         }
 
-        if ( user != null ) {
+        if (user != null) {
             validateAndUpdatePassword(providedEncryptedPassword, user);
         } else {
             logger.error("User authentication is invalid. Please try again.");
@@ -155,11 +152,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void forgetPassword(String email) throws HotelBookingException {
+    public void forgetPassword(String email) throws HotelBookingException, UnsupportedEncodingException {
         User user = userRepository.findOneByEmail(email);
-        if ( user != null ) {
+        if (user != null) {
             String content;
-            if ( user.isPasswordCreated() ) {
+            if (!Objects.isNull(user.getPassword())) {
                 String token = userJwtTokenCreator.generateJwtToken(user, JwtTokenTypeEnum.INVITATION_TOKEN);
                 String resetLink = forgetPasswordLink.concat(encodeValue(token));
                 content = String.format(EmailConstants.INVITATION_EMAIL_CONTENT, resetLink);
@@ -167,8 +164,7 @@ public class UserServiceImpl implements UserService {
                 content = EmailConstants.INVITATION_EMAIL_CONTACT_ADMIN_CONTENT;
             }
             emailService.sendEmail(email, content, "Forgot password");
-        }
-        else {
+        } else {
             logger.error("User with email:{} not found.", email);
             throw new HotelBookingException(HttpStatus.BAD_REQUEST, String.format("User with email:%s not found.", email));
         }
@@ -176,9 +172,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findOne(Long userId) throws HotelBookingException {
-        Optional < User > user = userRepository.findById(userId);
+        Optional<User> user = userRepository.findById(userId);
 
-        if ( user.isPresent() ) {
+        if (user.isPresent()) {
             return user.get();
         } else {
             logger.info("User not found for user id {}", user);
@@ -186,8 +182,8 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private String encodeValue(String value) {
-        return URLEncoder.encode(value, StandardCharsets.UTF_8);
+    private String encodeValue(String value) throws UnsupportedEncodingException {
+        return URLEncoder.encode(value, String.valueOf(StandardCharsets.UTF_8));
     }
 
     private void validateAndUpdatePassword(String providedEncryptedPassword, User user) throws HotelBookingException {
@@ -199,12 +195,11 @@ public class UserServiceImpl implements UserService {
         }
         Optional<User> optionalUser = userRepository.findById(user.getUserId());
         User userToBeUpdated = null;
-        if(optionalUser.isPresent()){
+        if (optionalUser.isPresent()) {
             userToBeUpdated = optionalUser.get();
             userToBeUpdated.setPassword(providedEncryptedPassword);
-            userToBeUpdated.setPasswordCreated(true);
             userRepository.save(userToBeUpdated);
-        }else{
+        } else {
             logger.error("Password update failed.User not found for Id:{}", user.getUserId());
             throw new HotelBookingException(HttpStatus.INTERNAL_SERVER_ERROR, "Password update failed. User not found");
         }

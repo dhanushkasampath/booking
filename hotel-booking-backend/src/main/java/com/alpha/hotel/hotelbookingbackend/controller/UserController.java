@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.io.UnsupportedEncodingException;
 
 @CrossOrigin(origins = "http://localhost:3000")
 @RestController
@@ -68,7 +69,7 @@ public class UserController {
     @PutMapping(path = "/forget-password")
     public ResponseEntity<String> forgetPassword(
             @RequestParam
-            String email) throws HotelBookingException {
+            String email) throws HotelBookingException, UnsupportedEncodingException {
         logger.info("Request received to send a mail to {} with invitation link. user is going to reset the password", email);
         userService.forgetPassword(email);
         return new ResponseEntity<>(HttpStatus.OK);
@@ -77,7 +78,7 @@ public class UserController {
     @PostMapping(value = "/create", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserDto> createUser(
             @Valid
-            @RequestBody UserDto userDto) throws HotelBookingException {
+            @RequestBody UserDto userDto) throws HotelBookingException, UnsupportedEncodingException {
         logger.info("Received request to create a user");
         userService.create(userDto);
         logger.info("Return response after creating the user");
