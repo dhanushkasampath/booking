@@ -1,8 +1,13 @@
-// import StartingPageContent from '../StartingPage/StartingPageContent';
+import React from 'react'
+import { Link } from 'react-router-dom'
 
-const HomePage = () => {
-    // return <StartingPageContent />;
-    return <div>Hi this is HOME page!!</div>;
-};
-
-export default HomePage;
+export default function HomePage() {
+    return (
+        <div className="text-center">
+            <h1 className="main-title home-page-title">welcome to our app</h1>
+            <Link to="/">
+                <button className="primary-button">Log out</button>
+            </Link>
+        </div>
+    )
+}

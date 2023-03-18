@@ -1,68 +1,47 @@
+import React from 'react'
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+
+import CustomerLandingPage from './pages/CustomerLandingPage'
+import LoginPage from './pages/CustomerLoginPage'
+import RegisterPage from './pages/CustomerRegisterPage'
+import ForgetPasswordPage from './pages/ForgetPasswordPage'
+import HomePage from './pages/HomePage'
 import './App.css';
 
 function App() {
-    return (<div>Hellow</div>)
-    // return (
-    //     <BrowserRouter>
-    //         <Routes>
-    //             <Route path='/' exact>
-    //                 <HomePage />
-    //             </Route>
-    //
-    //             <Route path='/auth'>
-    //                 <AuthPage />
-    //             </Route>
-    //
-    //             <Route path='/profile'>
-    //                 <ProfilePage />
-    //             </Route>
-    //
-    //             {/*<Route path='*'>*/}
-    //             {/*    <Navigate to='/' />*/}
-    //             {/*</Route>*/}
-    //         </Routes>
-    //     </BrowserRouter>
-    // )
-  // return (
-  //   <div className="App">
-  //     <EmployeeRegistration/>
-  //
-  //
-  //     <div className='bannerback'></div>
-  //
-  //
-  //     <div className='main_header_hotel' >Hotel</div>
-  //
-  //     <div className='main_header_name'>TRAVO HOTEL BOOKING</div>
-  //      <div className='main_header_restuarents'>Restuarents</div>
-  //      <div className='main_header_cab'>Cab</div>
-  //      <div className='downloadcircle'></div>
-  //
-  //
-  //      <div className='download_content'>Download mobile app</div>
-  //
-  //      <div className='bannerbottom'></div>
-  //
-  //      <div className='fotter'>
-  //   <div className='footerback'></div>
-  //   <div className='name'>TRAVO HOTEL BOOKING</div>
-  //   <div className='about'>About TRAVO HOTEL BOOKING</div>
-  //   <div className='support'>Support center</div>
-  //   <div className='supportcentercontent'>Not Found What You Search <br/> <br/> How To Book? <br/> <br/> Why Alpha Hotel Booking? <br/> <br/> FAQs </div>
-  //   <div className='becomehost'></div>
-  //   <div className='becomehostcontent'>Become a Host</div>
-  //   <div className='signup'></div>
-  //   <div className='signupcontent'>Sign Up</div>
-  //   <div className='fotterline'></div>
-  //   <div className='download'>Download available from</div>
-  //   <div className='downloadbox'></div>
-  //   <div className='last_row'>© 2022 Angular Whiplash | All rights reserved | Terms and conditions | Privacy</div>
-  //   <div className='fa-brands fa-facebook'></div>
-  //
-  //   </div>
-  //
-  //   </div>
-  // );
+    return (
+        <Router>
+            <div>
+                <Switch>
+                    <Route exact path="/" component={ CustomerLandingPage } />
+                    <Route path="/login" component={ LoginPage } />
+                    <Route path="/register" component={ RegisterPage } />
+                    <Route path="/forget-password" component={ ForgetPasswordPage } />
+                    <Route path="/home" component={ HomePage } />
+                </Switch>
+                <Footer />
+            </div>
+        </Router>
+    )
+
 }
 
 export default App;
+
+const Footer = () => {
+    return (
+        <p className="text-center" style={ FooterStyle }>Designed & coded by <a href="https://izemspot.netlify.com" target="_blank" rel="noopener noreferrer">IZEMSPOT</a></p>
+    )
+}
+
+const FooterStyle = {
+    background: "#222",
+    fontSize: ".8rem",
+    color: "#fff",
+    position: "absolute",
+    bottom: 0,
+    padding: "1rem",
+    margin: 0,
+    width: "100%",
+    opacity: ".5"
+}
