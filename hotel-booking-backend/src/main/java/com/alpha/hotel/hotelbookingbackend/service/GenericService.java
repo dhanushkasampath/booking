@@ -13,7 +13,7 @@ import java.lang.reflect.Type;
 
 public interface GenericService {
     Logger logger = LoggerFactory.getLogger(GenericService.class);
-    ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper objectMapper = new ObjectMapper();
 
     ModelMapper modelMapper = new ModelMapper();
 

@@ -3,8 +3,6 @@ package com.alpha.hotel.hotelbookingbackend.controller;
 import com.alpha.hotel.hotelbookingbackend.dto.UserDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginRequestDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginResponseDto;
-import com.alpha.hotel.hotelbookingbackend.dto.UserResponseDto;
-import com.alpha.hotel.hotelbookingbackend.entity.User;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
 import com.alpha.hotel.hotelbookingbackend.service.UserService;
 import com.alpha.hotel.hotelbookingbackend.util.UserLoginTypeEnum;
