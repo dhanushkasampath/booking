@@ -1,35 +1,28 @@
 import './App.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-// import EmployeeRegistration from './components/EmployeeRegistration';
-import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
-import HomePage from "./pages/HomePage";
-import AuthPage from "./pages/AuthPage";
-import ProfilePage from "./pages/ProfilePage";
-import Layout from "./components/Layout/Layout";
 
 function App() {
-    // return (<div>Hellow</div>)
-    return (
-        <BrowserRouter>
-            <Routes>
-                <Route path='/' exact>
-                    <HomePage />
-                </Route>
-
-                <Route path='/auth'>
-                    <AuthPage />
-                </Route>
-
-                <Route path='/profile'>
-                    <ProfilePage />
-                </Route>
-
-                {/*<Route path='*'>*/}
-                {/*    <Navigate to='/' />*/}
-                {/*</Route>*/}
-            </Routes>
-        </BrowserRouter>
-    )
+    return (<div>Hellow</div>)
+    // return (
+    //     <BrowserRouter>
+    //         <Routes>
+    //             <Route path='/' exact>
+    //                 <HomePage />
+    //             </Route>
+    //
+    //             <Route path='/auth'>
+    //                 <AuthPage />
+    //             </Route>
+    //
+    //             <Route path='/profile'>
+    //                 <ProfilePage />
+    //             </Route>
+    //
+    //             {/*<Route path='*'>*/}
+    //             {/*    <Navigate to='/' />*/}
+    //             {/*</Route>*/}
+    //         </Routes>
+    //     </BrowserRouter>
+    // )
   // return (
   //   <div className="App">
   //     <EmployeeRegistration/>
