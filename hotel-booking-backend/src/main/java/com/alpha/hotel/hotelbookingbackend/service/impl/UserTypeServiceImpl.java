@@ -1,9 +1,12 @@
 package com.alpha.hotel.hotelbookingbackend.service.impl;
 
+import com.alpha.hotel.hotelbookingbackend.dto.ToggleUserTypeRequestDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserTypeDto;
+import com.alpha.hotel.hotelbookingbackend.entity.User;
 import com.alpha.hotel.hotelbookingbackend.entity.UserType;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
 import com.alpha.hotel.hotelbookingbackend.repository.UserTypeRepository;
+import com.alpha.hotel.hotelbookingbackend.service.UserService;
 import com.alpha.hotel.hotelbookingbackend.service.UserTypeService;
 import com.alpha.hotel.hotelbookingbackend.util.UserTypeEnum;
 import org.slf4j.Logger;
@@ -20,6 +23,8 @@ public class UserTypeServiceImpl implements UserTypeService {
     private final Logger logger = LoggerFactory.getLogger(UserTypeServiceImpl.class);
     @Autowired
     private UserTypeRepository userTypeRepository;
+    @Autowired
+    private UserService userService;
 
     @Override
     public UserType getUserTypeByType(UserTypeEnum userTypeEnum) throws HotelBookingException {
@@ -41,5 +46,14 @@ public class UserTypeServiceImpl implements UserTypeService {
         List<UserType> userTypeList = userTypeRepository.findAll();
         List<UserTypeDto> userTypeDtoList = Arrays.asList(map(userTypeList, UserTypeDto[].class));
         return userTypeDtoList;
+    }
+
+    @Override
+    public void toggleUser(ToggleUserTypeRequestDto toggleUserTypeRequestDto) throws HotelBookingException {
+        logger.debug("toggleUser method started");
+        UserType newUserType = getUserTypeByType(UserTypeEnum.valueOf(toggleUserTypeRequestDto.getNewUserType()));
+        User user = userService.findByUserName(toggleUserTypeRequestDto.getUserName());
+        user.setUserType(newUserType);
+        userService.persist(user);
     }
 }

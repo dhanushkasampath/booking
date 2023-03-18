@@ -38,8 +38,6 @@ public class UserServiceImpl implements UserService {
     @Value("${invitation.email.initial.login.url}")
     private String initialLoginUrl;
     @Autowired
-    private CustomerRepository customerRepository;
-    @Autowired
     private UserRepository userRepository;
     @Autowired
     private ModelMapper modelMapper;
@@ -53,15 +51,14 @@ public class UserServiceImpl implements UserService {
     private UserTypeService userTypeService;
 
     @Override
-    public User create(UserDto userDTO) throws HotelBookingException, UnsupportedEncodingException {
+    public void create(UserDto userDTO) throws HotelBookingException, UnsupportedEncodingException {
         logger.debug("create method started");
         User user = map(userDTO, User.class);
         user.setUserType(userTypeService.getUserTypeByType(UserTypeEnum.CUSTOMER));
-        User createdUser = persist(user);
+        persist(user);
         //send email
         generateJwtTokenAndSendEmail(user);
         logger.debug("create method ended");
-        return createdUser;
     }
 
     private void generateJwtTokenAndSendEmail(User user) throws HotelBookingException, UnsupportedEncodingException {
@@ -71,7 +68,8 @@ public class UserServiceImpl implements UserService {
         emailService.sendEmail(user.getEmail(), String.format(EmailConstants.INVITATION_EMAIL_CONTENT, firstLoginLink), "First time verification");
     }
 
-    private User persist(User user) throws HotelBookingException {
+    @Override
+    public User persist(User user) throws HotelBookingException {
         User userCreated = null;
         try {
             userCreated = userRepository.save(user);
@@ -91,6 +89,16 @@ public class UserServiceImpl implements UserService {
             throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Constraint violation for user");
         }
         return userCreated;
+    }
+
+    @Override
+    public User findByUserName(String userName) throws HotelBookingException {
+        User user = userRepository.findByUserName(userName);
+        if(user == null){
+            logger.error("user not found for username:{}", userName);
+            throw new HotelBookingException(HttpStatus.BAD_REQUEST, "user not found for username");
+        }
+        return user;
     }
 
     @Override

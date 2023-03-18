@@ -91,6 +91,7 @@ public class UserJwtTokenCreator {
         customerDetailsMap.put(Constants.USER_DISTRICT_KEY, user.getDistrict());
         customerDetailsMap.put(Constants.USER_PROVINCE_KEY, user.getProvince());
         customerDetailsMap.put(Constants.USER_TOWN_KEY, user.getTown());
+        customerDetailsMap.put(Constants.USER_TYPE_KEY, user.getUserType().getUserType().toString());
 
         logger.debug("claims size : {}", customerDetailsMap.size());
 
@@ -126,6 +127,7 @@ public class UserJwtTokenCreator {
         customerDetailsMap.put(Constants.USER_DISTRICT_KEY, user.getDistrict());
         customerDetailsMap.put(Constants.USER_PROVINCE_KEY, user.getProvince());
         customerDetailsMap.put(Constants.USER_TOWN_KEY, user.getTown());
+        customerDetailsMap.put(Constants.USER_TYPE_KEY, user.getUserType().getUserType().toString());
 
         if (type.equals(JwtTokenTypeEnum.INVITATION_TOKEN)) {
             String pw = user.getPassword() == null ? passwordKey : user.getPassword();

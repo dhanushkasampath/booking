@@ -129,6 +129,8 @@ public class JwtServiceImpl implements JwtService {
                 break;
             case Constants.USER_ONE_TIME_AUTH_KEY:
                 userPropertyValue = this.decodeJwt(jwt).get(Constants.USER_ONE_TIME_AUTH_KEY).toString();
+            case Constants.USER_TYPE_KEY:
+                userPropertyValue = this.decodeJwt(jwt).get(Constants.USER_TYPE_KEY).toString();
                 break;
             default:
                 logger.error("User property:{} is not included in the Jwt token", requestUserProperty);
@@ -145,6 +147,6 @@ public class JwtServiceImpl implements JwtService {
             throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "Request header not found.");
         }
 
-        return request.getHeader(Constants.AUTHORIZATION_HEADER).replace("Bearer", "");
+        return request.getHeader(Constants.AUTHORIZATION_HEADER).replace("Bearer ", "");
     }
 }

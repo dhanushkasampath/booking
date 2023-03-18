@@ -10,7 +10,7 @@ import com.alpha.hotel.hotelbookingbackend.util.UserLoginTypeEnum;
 import java.io.UnsupportedEncodingException;
 
 public interface UserService extends GenericService {
-    User create(UserDto userDTO) throws HotelBookingException, UnsupportedEncodingException;
+    void create(UserDto userDTO) throws HotelBookingException, UnsupportedEncodingException;
 
     UserLoginResponseDto userGeneralLogin(UserLoginRequestDto userLoginRequestDto) throws HotelBookingException;
 
@@ -19,4 +19,7 @@ public interface UserService extends GenericService {
     void forgetPassword(String email) throws HotelBookingException, UnsupportedEncodingException;
 
     User findOne(Long userId) throws HotelBookingException;
+    User persist(User user) throws HotelBookingException;
+
+    User findByUserName(String userName) throws HotelBookingException;
 }

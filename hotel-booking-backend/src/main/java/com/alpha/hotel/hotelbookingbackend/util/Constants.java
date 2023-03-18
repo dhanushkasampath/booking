@@ -17,6 +17,7 @@ public class Constants {
     public static final String USER_PROVINCE_KEY = "province";
     public static final String USER_TOWN_KEY = "town";
     public static final String USER_ONE_TIME_AUTH_KEY = "one_time_auth_key";
+    public static final String USER_TYPE_KEY = "user_type";
     public static final String AUTHORIZATION_HEADER = "Authorization";
 
 
