@@ -144,11 +144,6 @@ public class UserServiceImpl implements UserService {
 
         } else if (userLoginType.equals(UserLoginTypeEnum.FORGET_PASSWORD_LOGIN)) {
             user = userRepository.findOneByEmail(providedUserName);
-            if (user != null) {
-//            if ( user != null && !user.isPasswordCreated() ) {
-                logger.error("User has not completed initial login, userId: {}", user.getUserId());
-                throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "User has not completed initial login");
-            }
         }
 
         if (user != null) {
