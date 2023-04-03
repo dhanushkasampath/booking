@@ -1,9 +1,26 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
+import axios from 'axios'
 
 import '../App.css'
 
 export default function ForgetPasswordPage() {
+
+    const [email,setEmail]= useState("");
+
+    async function sendPasswordResetEmail(event){
+        console.log(email);
+        try
+        {
+            await axios.put("http://localhost:8088/api/v1/user/forget-password?email="+email);
+            alert("password reset email successfully sent!");
+            setEmail("");
+        }
+        catch (err){
+            alert("Forget password process failed");
+        }
+    }
+
     return (
         <div className="text-center m-5-auto">
             <h2>Reset your password</h2>
@@ -11,10 +28,18 @@ export default function ForgetPasswordPage() {
             <form action="/login">
                 <p>
                     <label id="reset_pass_lbl">Email address</label><br/>
-                    <input type="email" name="email" required />
+                    <input type="email" name="email" required
+                           value={email}
+                           onChange={(event) =>
+                           {
+                               setEmail(event.target.value);
+                           }}
+                    />
                 </p>
                 <p>
-                    <button id="sub_btn" type="submit">Send password reset email</button>
+                    <Link to="/">
+                        <button id="sub_btn" type="submit" onClick={sendPasswordResetEmail}>Send password reset email</button>
+                    </Link>
                 </p>
             </form>
             <footer>

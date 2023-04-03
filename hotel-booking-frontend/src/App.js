@@ -5,6 +5,7 @@ import CustomerLandingPage from './pages/CustomerLandingPage'
 import LoginPage from './pages/CustomerLoginPage'
 import RegisterPage from './pages/CustomerRegisterPage'
 import ForgetPasswordPage from './pages/ForgetPasswordPage'
+import UserPasswordResetPage from './pages/UserPasswordResetPage'
 import HomePage from './pages/HomePage'
 import './App.css';
 
@@ -17,6 +18,7 @@ function App() {
                     <Route path="/login" component={ LoginPage } />
                     <Route path="/register" component={ RegisterPage } />
                     <Route path="/forget-password" component={ ForgetPasswordPage } />
+                    <Route path="/reset-password" component={ UserPasswordResetPage } />
                     <Route path="/home" component={ HomePage } />
                 </Switch>
                 <Footer />
