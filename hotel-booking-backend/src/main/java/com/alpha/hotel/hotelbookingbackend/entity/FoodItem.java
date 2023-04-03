@@ -15,7 +15,7 @@ public class FoodItem {
     private String foodId;
 
     private String type;
-    private String foodNmae;
+    private String foodName;
     private float size;
     private float price;
 

@@ -8,3 +8,12 @@ CREATE DATABASE
 
 travo=# TABLE customer;
 
+
+I can use \list to show all the databases, \d to show all the tables,
+
+postgres=# \c travo
+
+
+@manytoone->@JsonBackReference
+
+@onetomany -> @JsonManagedReference
