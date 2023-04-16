@@ -3,6 +3,7 @@ import {useState} from 'react';
 import {Link, useHistory} from 'react-router-dom';
 import '../App.css';
 import axios from "axios";
+import cryptoJS from "crypto-js";
 
 export default function SignInPage() {
     const history = useHistory();
@@ -14,11 +15,17 @@ export default function SignInPage() {
         event.preventDefault();
         setUserName("");
         setPassword("");
+
+        const encryptedPassword = cryptoJS.AES.encrypt(password, "secrete_key").toString();
+        const encodedPassword = cryptoJS.enc.Base64.parse(encryptedPassword).toString(cryptoJS.enc.Hex);
+        console.log("encryptedPassword -> " + encryptedPassword);
+        console.log("encodedPassword -> " + encodedPassword);//this includes only alphanumeric characters
+
         try {
             await axios.post("http://localhost:8088/api/v1/user/login?userLoginType=GENERAL_LOGIN",
                 {
                     userName: userName,
-                    password: password
+                    password: encodedPassword
                 }).then((response) => {
                 console.log(response.status);
                 console.log('RESPONSE: ' + response.data.token);

@@ -1,9 +1,8 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {useHistory} from 'react-router-dom'
-import {useState} from 'react';
 import axios from 'axios';
 import jwt from 'jwt-decode';
-
+import cryptoJS from "crypto-js";
 import '../App.css'
 
 export default function ResetPassword() {
@@ -28,13 +27,18 @@ export default function ResetPassword() {
         console.log(userName);
 
         if (enteredPassword === confirmPassword) {
+            const encryptedPassword = cryptoJS.AES.encrypt(enteredPassword, "secrete_key").toString();
+            const encodedPassword = cryptoJS.enc.Base64.parse(encryptedPassword).toString(cryptoJS.enc.Hex);
+            console.log("encryptedPassword -> " + encryptedPassword);
+            console.log("encodedPassword -> " + encodedPassword);//this includes only alphanumeric characters
+
             console.log("Passwords match");
             console.log(window.location.href);
             try {
                 await axios.post("http://localhost:8088/api/v1/user/login?userLoginType=INITIAL_LOGIN",
                     {
                         userName: userName,
-                        password: enteredPassword
+                        password: encodedPassword
                     }).then((response) => {
                     console.log(response.status);
                     console.log('RESPONSE: ' + response.data.token);
