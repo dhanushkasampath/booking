@@ -1,10 +1,11 @@
 import React, {useState} from 'react'
-import { Link } from 'react-router-dom'
+import {Link, useHistory} from 'react-router-dom'
 import axios from 'axios'
 
 import '../App.css'
 
 export default function SignUpPage() {
+    const history = useHistory();
 
     const [userName, setUserName] = useState("");
     const [emailAddress, setEmailAddress] = useState("");
@@ -28,6 +29,15 @@ export default function SignUpPage() {
         console.log(district);
         console.log(town);
         event.preventDefault();
+        setUserName("");
+        setEmailAddress ("")
+        setFirstName("");
+        setLastName("");
+        setContactNumber("");
+        setDateOfBirth("");
+        setProvince("");
+        setDistrict("") ;
+        setTown ("");
         try
         {
             await axios.post("http://localhost:8088/api/v1/user/create",
@@ -35,7 +45,7 @@ export default function SignUpPage() {
 
                     userName : userName,
                     email: emailAddress,
-                    firstname : firstName,
+                    firstName : firstName,
                     lastName : lastName,
                     contactNo: contactNumber,
                     dateOfBirth: dateOfBirth,
@@ -43,17 +53,20 @@ export default function SignUpPage() {
                     district: district,
                     town: town
 
-                });
-            alert("User Registration Successful");
-            setUserName("");
-            setEmailAddress ("")
-            setFirstName("");
-            setLastName("");
-            setContactNumber("");
-            setDateOfBirth("");
-            setProvince("");
-            setDistrict("") ;
-            setTown ("");
+                }).then((response) => {
+                console.log(response.status);
+                console.log('RESPONSE: ' + response.data.token);
+
+                if (response.status === 200) {
+                    alert("User Registration Successful.");
+
+                    //redirect to home page
+                    history.replace('/');
+                } else {
+                    //stay in the same page
+                    alert("Failed to register user. Please try again");
+                }
+            });
         }
         catch(err)
         {

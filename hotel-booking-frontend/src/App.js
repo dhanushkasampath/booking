@@ -6,6 +6,7 @@ import LoginPage from './pages/CustomerLoginPage'
 import RegisterPage from './pages/CustomerRegisterPage'
 import ForgetPasswordPage from './pages/ForgetPasswordPage'
 import UserPasswordResetPage from './pages/UserPasswordResetPage'
+import UserPasswordSetPage from './pages/UserPasswordSetPage'
 import HomePage from './pages/HomePage'
 import './App.css';
 
@@ -19,6 +20,7 @@ function App() {
                     <Route path="/register" component={ RegisterPage } />
                     <Route path="/forget-password" component={ ForgetPasswordPage } />
                     <Route path="/reset-password" component={ UserPasswordResetPage } />
+                    <Route path="/create-password" component={ UserPasswordSetPage } />
                     <Route path="/home" component={ HomePage } />
                 </Switch>
                 <Footer />
