@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom'
 
 import CustomerLandingPage from './pages/CustomerLandingPage'
 import LoginPage from './pages/CustomerLoginPage'
@@ -11,6 +11,16 @@ import HomePage from './pages/HomePage'
 import './App.css';
 
 function App() {
+
+    const isLoggedIn = () => {
+        const storedToken = localStorage.getItem('token');
+        if(storedToken === null){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     return (
         <Router>
             <div>
@@ -21,7 +31,10 @@ function App() {
                     <Route path="/forget-password" component={ ForgetPasswordPage } />
                     <Route path="/reset-password" component={ UserPasswordResetPage } />
                     <Route path="/create-password" component={ UserPasswordSetPage } />
-                    <Route path="/home" component={ HomePage } />
+                    <Route path="/home" >
+                        {isLoggedIn() && <HomePage />}
+                        {!isLoggedIn() && <Redirect to = '/' />}
+                    </Route>
                 </Switch>
                 <Footer />
             </div>
