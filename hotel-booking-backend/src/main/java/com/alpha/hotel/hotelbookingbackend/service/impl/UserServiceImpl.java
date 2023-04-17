@@ -106,7 +106,6 @@ public class UserServiceImpl implements UserService {
         logger.debug("userGeneralLogin method started. Login requested user_name : {}", userLoginRequestDto.getUserName());
 
         String providedEncryptedPassword = userLoginRequestDto.getPassword();
-//        String password = encryptDecryptService.encrypt(providedEncryptedPassword, secretKey);
         String userNameProvided = userLoginRequestDto.getUserName();
         User user = userRepository.findByUserName(userNameProvided);
 
