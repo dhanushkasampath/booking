@@ -29,10 +29,8 @@ export default function ResetPassword() {
         console.log(email);
 
         if (enteredPassword === confirmPassword) {
-            const encryptedPassword  = cryptoJS.AES.encrypt(enteredPassword, "secrete_key").toString();
-            const encodedPassword = cryptoJS.enc.Base64.parse(encryptedPassword).toString(cryptoJS.enc.Hex);
+            const encryptedPassword = cryptoJS.SHA3(enteredPassword, { outputLength: 224 }).toString();
             console.log("encryptedPassword -> " + encryptedPassword);
-            console.log("encodedPassword -> " + encodedPassword);//this includes only alphanumeric characters
 
             console.log("Passwords match");
             console.log(window.location.href);
@@ -40,7 +38,7 @@ export default function ResetPassword() {
                 await axios.post("http://localhost:8088/api/v1/user/login?userLoginType=FORGET_PASSWORD_LOGIN",
                     {
                         userName: email,
-                        password: encodedPassword
+                        password: encryptedPassword
                     }).then((response) => {
                     console.log(response.status);
                     console.log('RESPONSE: ' + response.data.token);

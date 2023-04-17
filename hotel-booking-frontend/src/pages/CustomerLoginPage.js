@@ -16,16 +16,14 @@ export default function SignInPage() {
         setUserName("");
         setPassword("");
 
-        const encryptedPassword = cryptoJS.AES.encrypt(password, "secrete_key").toString();
-        const encodedPassword = cryptoJS.enc.Base64.parse(encryptedPassword).toString(cryptoJS.enc.Hex);
+        const encryptedPassword = cryptoJS.SHA3(password, { outputLength: 224 }).toString();
         console.log("encryptedPassword -> " + encryptedPassword);
-        console.log("encodedPassword -> " + encodedPassword);//this includes only alphanumeric characters
 
         try {
             await axios.post("http://localhost:8088/api/v1/user/login?userLoginType=GENERAL_LOGIN",
                 {
                     userName: userName,
-                    password: encodedPassword
+                    password: encryptedPassword
                 }).then((response) => {
                 console.log(response.status);
                 console.log('RESPONSE: ' + response.data.token);
