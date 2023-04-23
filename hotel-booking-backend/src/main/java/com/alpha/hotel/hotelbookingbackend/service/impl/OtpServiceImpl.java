@@ -24,7 +24,7 @@ public class OtpServiceImpl implements OtpService {
     @Override
     public Otp findByContactNo(String contactNo) {
         Otp otp = otpRepository.findByContactNo(contactNo);
-        if (otp == null) {
+        if (otp != null) {
             return otp ;
         } else {
             return null;
