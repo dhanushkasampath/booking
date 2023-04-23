@@ -4,6 +4,7 @@ import com.alpha.hotel.hotelbookingbackend.config.security.UserJwtTokenCreator;
 import com.alpha.hotel.hotelbookingbackend.dto.UserDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginRequestDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginResponseDto;
+import com.alpha.hotel.hotelbookingbackend.dto.UserOtpRequestDto;
 import com.alpha.hotel.hotelbookingbackend.entity.Otp;
 import com.alpha.hotel.hotelbookingbackend.entity.User;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
@@ -107,6 +109,32 @@ public class UserServiceImpl implements UserService {
             throw new HotelBookingException(HttpStatus.BAD_REQUEST, "user not found for username");
         }
         return user;
+    }
+
+    @Override
+    public UserLoginResponseDto authenticateWithOtp(UserOtpRequestDto userOtpRequestDto) throws HotelBookingException {
+        logger.info("authenticateWithOtp method started");
+        User user = this.findByUserName(userOtpRequestDto.getUserName());
+        Otp otp = otpService.findByContactNo(user.getContactNo());
+        if (otp == null) {
+            logger.error("otp has not generated for contact no:{}", user.getContactNo());
+            throw new HotelBookingException(HttpStatus.BAD_REQUEST,
+                    String.format("otp has not generated for contact no:%s", user.getContactNo()));
+        }
+
+        if (!otp.getExpiryTime().isAfter(LocalDateTime.now())) {
+            logger.error("OTP has expired. Please login again");
+            throw new HotelBookingException(HttpStatus.BAD_REQUEST, "OTP has expired. Please login again");
+        }
+
+        if (!userOtpRequestDto.getOtp().equals(otp.getOtpCode())) {
+            logger.error("Invalid OTP.");
+            throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Invalid OTP.");
+        }
+
+        String token = userJwtTokenCreator.generateJwtToken(user, JwtTokenTypeEnum.AUTHORIZED_TOKEN);
+        logger.debug("user successfully logged in.");
+        return new UserLoginResponseDto(token);
     }
 
     @Override
@@ -216,12 +244,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateAndUpdatePassword(String providedEncryptedPassword, User user) throws HotelBookingException {
-//        try {
-//            encryptDecryptService.decrypt(providedEncryptedPassword, secretKey);
-//        } catch (HotelBookingException e) {
-//            logger.error("Password entered is invalid. Please enter a valid one:{}", providedEncryptedPassword);
-//            throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Password entered is invalid. Please enter a valid one");
-//        }
+
         Optional<User> optionalUser = userRepository.findById(user.getUserId());
         User userToBeUpdated = null;
         if (optionalUser.isPresent()) {

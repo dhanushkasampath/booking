@@ -3,6 +3,7 @@ package com.alpha.hotel.hotelbookingbackend.controller;
 import com.alpha.hotel.hotelbookingbackend.dto.UserDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginRequestDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginResponseDto;
+import com.alpha.hotel.hotelbookingbackend.dto.UserOtpRequestDto;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
 import com.alpha.hotel.hotelbookingbackend.service.UserService;
 import com.alpha.hotel.hotelbookingbackend.util.UserLoginTypeEnum;
@@ -62,6 +63,17 @@ public class UserController {
             logger.error("Provided login type is not valid:{}", userLoginType);
             throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Invalid Login Type");
         }
+    }
+
+    @PostMapping(path = "/verify-otp")
+    public ResponseEntity<UserLoginResponseDto> verifyOtp(
+            @Valid
+            @RequestBody
+            UserOtpRequestDto userOtpRequestDto) throws HotelBookingException{
+        logger.info("Request received to verify otp for username:{}", userOtpRequestDto.getUserName());
+        UserLoginResponseDto userLoginResponseDto = userService.authenticateWithOtp(userOtpRequestDto);
+        logger.debug("User authenticated successfully for username : {}", userOtpRequestDto.getUserName());
+        return new ResponseEntity<>(userLoginResponseDto, HttpStatus.OK);
     }
 
     @PutMapping(path = "/forget-password")
