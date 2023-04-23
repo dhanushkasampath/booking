@@ -46,7 +46,7 @@ public class UserController {
 
         } else if (userLoginType.toString().equals(UserLoginTypeEnum.INITIAL_LOGIN.toString())) {
 
-            logger.debug("Login for the first time with user name " + userLoginRequestDto.getUserName());
+            logger.debug("Login for the first time with user name:{} ", userLoginRequestDto.getUserName());
             userService.userSpecialLogin(userLoginRequestDto, UserLoginTypeEnum.INITIAL_LOGIN);
             logger.debug("Initial login successfully completed for username : {}", userLoginRequestDto.getUserName());
             return new ResponseEntity<>(HttpStatus.OK);

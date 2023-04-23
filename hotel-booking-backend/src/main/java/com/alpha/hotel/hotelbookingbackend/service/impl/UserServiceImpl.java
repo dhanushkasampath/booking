@@ -4,15 +4,20 @@ import com.alpha.hotel.hotelbookingbackend.config.security.UserJwtTokenCreator;
 import com.alpha.hotel.hotelbookingbackend.dto.UserDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginRequestDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginResponseDto;
+import com.alpha.hotel.hotelbookingbackend.entity.Otp;
 import com.alpha.hotel.hotelbookingbackend.entity.User;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
-import com.alpha.hotel.hotelbookingbackend.repository.CustomerRepository;
 import com.alpha.hotel.hotelbookingbackend.repository.UserRepository;
 import com.alpha.hotel.hotelbookingbackend.service.EmailService;
 import com.alpha.hotel.hotelbookingbackend.service.EncryptDecryptService;
+import com.alpha.hotel.hotelbookingbackend.service.OtpService;
 import com.alpha.hotel.hotelbookingbackend.service.UserService;
 import com.alpha.hotel.hotelbookingbackend.service.UserTypeService;
-import com.alpha.hotel.hotelbookingbackend.util.*;
+import com.alpha.hotel.hotelbookingbackend.util.Constants;
+import com.alpha.hotel.hotelbookingbackend.util.EmailConstants;
+import com.alpha.hotel.hotelbookingbackend.util.JwtTokenTypeEnum;
+import com.alpha.hotel.hotelbookingbackend.util.UserLoginTypeEnum;
+import com.alpha.hotel.hotelbookingbackend.util.UserTypeEnum;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +32,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -49,6 +55,8 @@ public class UserServiceImpl implements UserService {
     private EmailService emailService;
     @Autowired
     private UserTypeService userTypeService;
+    @Autowired
+    private OtpService otpService;
 
     @Override
     public void create(UserDto userDTO) throws HotelBookingException, UnsupportedEncodingException {
@@ -81,11 +89,11 @@ public class UserServiceImpl implements UserService {
             }
 
             if ((Constants.DUPLICATE_EMAIL.toLowerCase()).equals(((org.hibernate.exception.ConstraintViolationException) e.getCause()).getConstraintName())) {
-                logger.error("User already exist with email:{} ,Enter a unique email {}", user.getEmail(), e);
+                logger.error("User already exist with email:{} ,Enter a unique email", user.getEmail(), e);
                 throw new HotelBookingException(HttpStatus.BAD_REQUEST, String.format("User already exist with email:%s, Enter a unique email", user.getEmail()));
             }
 
-            logger.error("Constraint violation for user save request {}, {} ", e.getLocalizedMessage(), e);
+            logger.error("Constraint violation for user save request {}", e.getLocalizedMessage(), e);
             throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Constraint violation for user");
         }
         return userCreated;
@@ -94,7 +102,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findByUserName(String userName) throws HotelBookingException {
         User user = userRepository.findByUserName(userName);
-        if(user == null){
+        if (user == null) {
             logger.error("user not found for username:{}", userName);
             throw new HotelBookingException(HttpStatus.BAD_REQUEST, "user not found for username");
         }
@@ -119,10 +127,29 @@ public class UserServiceImpl implements UserService {
             logger.error("Password not matched for user name:{}", userLoginRequestDto.getUserName());
             throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "Invalid User Credentials");
         } else {
-            String token = userJwtTokenCreator.generateJwtToken(user, JwtTokenTypeEnum.AUTHORIZED_TOKEN);
-            logger.debug("user successfully logged in.");
-            return new UserLoginResponseDto(token);
+//            String token = userJwtTokenCreator.generateJwtToken(user, JwtTokenTypeEnum.AUTHORIZED_TOKEN);
+//            logger.debug("user successfully logged in.");
+//            return new UserLoginResponseDto(token);
+            //send otp here
+            String userContactNo = user.getContactNo();
+            String otp = generateOtp();
+            persistOtp(otp, userContactNo);
+            return new UserLoginResponseDto("Please enter the otp sent to your mobile");
         }
+    }
+
+    private void persistOtp(String otpCode, String userContactNo) {
+        Otp otp = otpService.findByContactNo(userContactNo);
+        if (otp == null) {
+            otpService.create(otpCode, userContactNo);
+        } else {
+            otpService.update(otp, otpCode);
+        }
+    }
+
+    private String generateOtp() {
+        Random random = new Random();
+        return String.format("%04d", random.nextInt(10000));
     }
 
     @Override
