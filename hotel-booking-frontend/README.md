@@ -68,3 +68,18 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
+npm install --save crypto-js;
+
+const cryptoJS = require("crypto-js");
+
+const encryptedPassword  = cryptoJS.AES.encrypt(enteredPassword, "secrete_key").toString();
+const encodedPassword = cryptoJS.enc.Base64.parse(encryptedPassword).toString(cryptoJS.enc.Hex);
+console.log("encryptedPassword -> " + encryptedPassword);
+console.log("encodedPassword -> " + encodedPassword);
+
+const decodedPassword = cryptoJS.enc.Hex.parse(encodedPassword).toString(cryptoJS.enc.Base64);
+const decryptedPassword = cryptoJS.AES.decrypt(decodedPassword, "secrete_key").toString(cryptoJS.enc.Utf8);
+console.log("decodedPassword -> " + decodedPassword);
+console.log("decryptedPassword -> " + decryptedPassword);

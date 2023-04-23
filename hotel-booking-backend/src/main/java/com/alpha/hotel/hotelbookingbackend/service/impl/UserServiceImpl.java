@@ -106,7 +106,6 @@ public class UserServiceImpl implements UserService {
         logger.debug("userGeneralLogin method started. Login requested user_name : {}", userLoginRequestDto.getUserName());
 
         String providedEncryptedPassword = userLoginRequestDto.getPassword();
-//        String password = encryptDecryptService.encrypt(providedEncryptedPassword, secretKey);
         String userNameProvided = userLoginRequestDto.getUserName();
         User user = userRepository.findByUserName(userNameProvided);
 
@@ -190,12 +189,12 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateAndUpdatePassword(String providedEncryptedPassword, User user) throws HotelBookingException {
-        try {
-            encryptDecryptService.decrypt(providedEncryptedPassword, secretKey);
-        } catch (HotelBookingException e) {
-            logger.error("Password entered is invalid. Please enter a valid one:{}", providedEncryptedPassword);
-            throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Password entered is invalid. Please enter a valid one");
-        }
+//        try {
+//            encryptDecryptService.decrypt(providedEncryptedPassword, secretKey);
+//        } catch (HotelBookingException e) {
+//            logger.error("Password entered is invalid. Please enter a valid one:{}", providedEncryptedPassword);
+//            throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Password entered is invalid. Please enter a valid one");
+//        }
         Optional<User> optionalUser = userRepository.findById(user.getUserId());
         User userToBeUpdated = null;
         if (optionalUser.isPresent()) {
