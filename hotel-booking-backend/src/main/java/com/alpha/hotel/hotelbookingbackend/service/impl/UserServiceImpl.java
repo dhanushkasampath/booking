@@ -11,6 +11,7 @@ import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
 import com.alpha.hotel.hotelbookingbackend.repository.UserRepository;
 import com.alpha.hotel.hotelbookingbackend.service.EmailService;
 import com.alpha.hotel.hotelbookingbackend.service.EncryptDecryptService;
+import com.alpha.hotel.hotelbookingbackend.service.MessageService;
 import com.alpha.hotel.hotelbookingbackend.service.OtpService;
 import com.alpha.hotel.hotelbookingbackend.service.UserService;
 import com.alpha.hotel.hotelbookingbackend.service.UserTypeService;
@@ -59,6 +60,8 @@ public class UserServiceImpl implements UserService {
     private UserTypeService userTypeService;
     @Autowired
     private OtpService otpService;
+    @Autowired
+    private MessageService messageService;
 
     @Override
     public void create(UserDto userDTO) throws HotelBookingException, UnsupportedEncodingException {
@@ -155,13 +158,11 @@ public class UserServiceImpl implements UserService {
             logger.error("Password not matched for user name:{}", userLoginRequestDto.getUserName());
             throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "Invalid User Credentials");
         } else {
-//            String token = userJwtTokenCreator.generateJwtToken(user, JwtTokenTypeEnum.AUTHORIZED_TOKEN);
-//            logger.debug("user successfully logged in.");
-//            return new UserLoginResponseDto(token);
-            //send otp here
             String userContactNo = user.getContactNo();
             String otp = generateOtp();
             persistOtp(otp, userContactNo);
+            String token = "";
+            messageService.sendSms(userContactNo, String.format("Please use %s as your OTP", otp), token);
             return new UserLoginResponseDto("Please enter the otp sent to your mobile");
         }
     }
