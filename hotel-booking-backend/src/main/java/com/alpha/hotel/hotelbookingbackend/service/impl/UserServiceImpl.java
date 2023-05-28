@@ -4,15 +4,24 @@ import com.alpha.hotel.hotelbookingbackend.config.security.UserJwtTokenCreator;
 import com.alpha.hotel.hotelbookingbackend.dto.UserDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginRequestDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginResponseDto;
+import com.alpha.hotel.hotelbookingbackend.dto.UserOtpRequestDto;
+import com.alpha.hotel.hotelbookingbackend.entity.Otp;
 import com.alpha.hotel.hotelbookingbackend.entity.User;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
-import com.alpha.hotel.hotelbookingbackend.repository.CustomerRepository;
+import com.alpha.hotel.hotelbookingbackend.exception.ServiceCallException;
 import com.alpha.hotel.hotelbookingbackend.repository.UserRepository;
 import com.alpha.hotel.hotelbookingbackend.service.EmailService;
 import com.alpha.hotel.hotelbookingbackend.service.EncryptDecryptService;
+import com.alpha.hotel.hotelbookingbackend.service.MessageService;
+import com.alpha.hotel.hotelbookingbackend.service.OtpService;
 import com.alpha.hotel.hotelbookingbackend.service.UserService;
 import com.alpha.hotel.hotelbookingbackend.service.UserTypeService;
-import com.alpha.hotel.hotelbookingbackend.util.*;
+import com.alpha.hotel.hotelbookingbackend.util.Constants;
+import com.alpha.hotel.hotelbookingbackend.util.EmailConstants;
+import com.alpha.hotel.hotelbookingbackend.util.JwtTokenTypeEnum;
+import com.alpha.hotel.hotelbookingbackend.util.UserLoginTypeEnum;
+import com.alpha.hotel.hotelbookingbackend.util.UserTypeEnum;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +34,10 @@ import org.springframework.stereotype.Service;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -49,6 +60,10 @@ public class UserServiceImpl implements UserService {
     private EmailService emailService;
     @Autowired
     private UserTypeService userTypeService;
+    @Autowired
+    private OtpService otpService;
+    @Autowired
+    private MessageService messageService;
 
     @Override
     public void create(UserDto userDTO) throws HotelBookingException, UnsupportedEncodingException {
@@ -81,11 +96,11 @@ public class UserServiceImpl implements UserService {
             }
 
             if ((Constants.DUPLICATE_EMAIL.toLowerCase()).equals(((org.hibernate.exception.ConstraintViolationException) e.getCause()).getConstraintName())) {
-                logger.error("User already exist with email:{} ,Enter a unique email {}", user.getEmail(), e);
+                logger.error("User already exist with email:{} ,Enter a unique email", user.getEmail(), e);
                 throw new HotelBookingException(HttpStatus.BAD_REQUEST, String.format("User already exist with email:%s, Enter a unique email", user.getEmail()));
             }
 
-            logger.error("Constraint violation for user save request {}, {} ", e.getLocalizedMessage(), e);
+            logger.error("Constraint violation for user save request {}", e.getLocalizedMessage(), e);
             throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Constraint violation for user");
         }
         return userCreated;
@@ -94,7 +109,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findByUserName(String userName) throws HotelBookingException {
         User user = userRepository.findByUserName(userName);
-        if(user == null){
+        if (user == null) {
             logger.error("user not found for username:{}", userName);
             throw new HotelBookingException(HttpStatus.BAD_REQUEST, "user not found for username");
         }
@@ -102,7 +117,33 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserLoginResponseDto userGeneralLogin(UserLoginRequestDto userLoginRequestDto) throws HotelBookingException {
+    public UserLoginResponseDto authenticateWithOtp(UserOtpRequestDto userOtpRequestDto) throws HotelBookingException {
+        logger.info("authenticateWithOtp method started");
+        User user = this.findByUserName(userOtpRequestDto.getUserName());
+        Otp otp = otpService.findByContactNo(user.getContactNo());
+        if (otp == null) {
+            logger.error("otp has not generated for contact no:{}", user.getContactNo());
+            throw new HotelBookingException(HttpStatus.BAD_REQUEST,
+                    String.format("otp has not generated for contact no:%s", user.getContactNo()));
+        }
+
+        if (!otp.getExpiryTime().isAfter(LocalDateTime.now())) {
+            logger.error("OTP has expired. Please login again");
+            throw new HotelBookingException(HttpStatus.BAD_REQUEST, "OTP has expired. Please login again");
+        }
+
+        if (!userOtpRequestDto.getOtp().equals(otp.getOtpCode())) {
+            logger.error("Invalid OTP.");
+            throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Invalid OTP.");
+        }
+
+        String token = userJwtTokenCreator.generateJwtToken(user, JwtTokenTypeEnum.AUTHORIZED_TOKEN);
+        logger.debug("user successfully logged in.");
+        return new UserLoginResponseDto(token);
+    }
+
+    @Override
+    public UserLoginResponseDto userGeneralLogin(UserLoginRequestDto userLoginRequestDto) throws HotelBookingException, ServiceCallException, JsonProcessingException {
         logger.debug("userGeneralLogin method started. Login requested user_name : {}", userLoginRequestDto.getUserName());
 
         String providedEncryptedPassword = userLoginRequestDto.getPassword();
@@ -119,10 +160,26 @@ public class UserServiceImpl implements UserService {
             logger.error("Password not matched for user name:{}", userLoginRequestDto.getUserName());
             throw new HotelBookingException(HttpStatus.UNAUTHORIZED, "Invalid User Credentials");
         } else {
-            String token = userJwtTokenCreator.generateJwtToken(user, JwtTokenTypeEnum.AUTHORIZED_TOKEN);
-            logger.debug("user successfully logged in.");
-            return new UserLoginResponseDto(token);
+            String userContactNo = user.getContactNo();
+            String otp = generateOtp();
+            persistOtp(otp, userContactNo);
+            messageService.sendSms(userContactNo, String.format("Please use %s as your OTP", otp));
+            return new UserLoginResponseDto("Please enter the otp sent to your mobile");
         }
+    }
+
+    private void persistOtp(String otpCode, String userContactNo) {
+        Otp otp = otpService.findByContactNo(userContactNo);
+        if (otp == null) {
+            otpService.create(otpCode, userContactNo);
+        } else {
+            otpService.update(otp, otpCode);
+        }
+    }
+
+    private String generateOtp() {
+        Random random = new Random();
+        return String.format("%04d", random.nextInt(10000));
     }
 
     @Override
@@ -189,12 +246,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateAndUpdatePassword(String providedEncryptedPassword, User user) throws HotelBookingException {
-//        try {
-//            encryptDecryptService.decrypt(providedEncryptedPassword, secretKey);
-//        } catch (HotelBookingException e) {
-//            logger.error("Password entered is invalid. Please enter a valid one:{}", providedEncryptedPassword);
-//            throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Password entered is invalid. Please enter a valid one");
-//        }
+
         Optional<User> optionalUser = userRepository.findById(user.getUserId());
         User userToBeUpdated = null;
         if (optionalUser.isPresent()) {

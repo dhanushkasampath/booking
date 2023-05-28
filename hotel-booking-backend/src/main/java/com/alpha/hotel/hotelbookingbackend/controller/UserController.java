@@ -3,9 +3,12 @@ package com.alpha.hotel.hotelbookingbackend.controller;
 import com.alpha.hotel.hotelbookingbackend.dto.UserDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginRequestDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginResponseDto;
+import com.alpha.hotel.hotelbookingbackend.dto.UserOtpRequestDto;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
+import com.alpha.hotel.hotelbookingbackend.exception.ServiceCallException;
 import com.alpha.hotel.hotelbookingbackend.service.UserService;
 import com.alpha.hotel.hotelbookingbackend.util.UserLoginTypeEnum;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +37,7 @@ public class UserController {
             UserLoginTypeEnum userLoginType,
             @Valid
             @RequestBody
-            UserLoginRequestDto userLoginRequestDto, HttpServletRequest request) throws HotelBookingException {
+            UserLoginRequestDto userLoginRequestDto, HttpServletRequest request) throws HotelBookingException, ServiceCallException, JsonProcessingException {
 
         logger.info("Request received to authenticate, username : {} ", userLoginRequestDto.getUserName());
 
@@ -46,7 +49,7 @@ public class UserController {
 
         } else if (userLoginType.toString().equals(UserLoginTypeEnum.INITIAL_LOGIN.toString())) {
 
-            logger.debug("Login for the first time with user name " + userLoginRequestDto.getUserName());
+            logger.debug("Login for the first time with user name:{} ", userLoginRequestDto.getUserName());
             userService.userSpecialLogin(userLoginRequestDto, UserLoginTypeEnum.INITIAL_LOGIN);
             logger.debug("Initial login successfully completed for username : {}", userLoginRequestDto.getUserName());
             return new ResponseEntity<>(HttpStatus.OK);
@@ -62,6 +65,17 @@ public class UserController {
             logger.error("Provided login type is not valid:{}", userLoginType);
             throw new HotelBookingException(HttpStatus.BAD_REQUEST, "Invalid Login Type");
         }
+    }
+
+    @PostMapping(path = "/verify-otp")
+    public ResponseEntity<UserLoginResponseDto> verifyOtp(
+            @Valid
+            @RequestBody
+            UserOtpRequestDto userOtpRequestDto) throws HotelBookingException{
+        logger.info("Request received to verify otp for username:{}", userOtpRequestDto.getUserName());
+        UserLoginResponseDto userLoginResponseDto = userService.authenticateWithOtp(userOtpRequestDto);
+        logger.debug("User authenticated successfully for username : {}", userOtpRequestDto.getUserName());
+        return new ResponseEntity<>(userLoginResponseDto, HttpStatus.OK);
     }
 
     @PutMapping(path = "/forget-password")
