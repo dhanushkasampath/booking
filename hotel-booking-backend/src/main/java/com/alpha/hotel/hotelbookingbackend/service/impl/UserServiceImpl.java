@@ -8,6 +8,7 @@ import com.alpha.hotel.hotelbookingbackend.dto.UserOtpRequestDto;
 import com.alpha.hotel.hotelbookingbackend.entity.Otp;
 import com.alpha.hotel.hotelbookingbackend.entity.User;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
+import com.alpha.hotel.hotelbookingbackend.exception.ServiceCallException;
 import com.alpha.hotel.hotelbookingbackend.repository.UserRepository;
 import com.alpha.hotel.hotelbookingbackend.service.EmailService;
 import com.alpha.hotel.hotelbookingbackend.service.EncryptDecryptService;
@@ -20,6 +21,7 @@ import com.alpha.hotel.hotelbookingbackend.util.EmailConstants;
 import com.alpha.hotel.hotelbookingbackend.util.JwtTokenTypeEnum;
 import com.alpha.hotel.hotelbookingbackend.util.UserLoginTypeEnum;
 import com.alpha.hotel.hotelbookingbackend.util.UserTypeEnum;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,7 +143,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserLoginResponseDto userGeneralLogin(UserLoginRequestDto userLoginRequestDto) throws HotelBookingException {
+    public UserLoginResponseDto userGeneralLogin(UserLoginRequestDto userLoginRequestDto) throws HotelBookingException, ServiceCallException, JsonProcessingException {
         logger.debug("userGeneralLogin method started. Login requested user_name : {}", userLoginRequestDto.getUserName());
 
         String providedEncryptedPassword = userLoginRequestDto.getPassword();
@@ -161,8 +163,7 @@ public class UserServiceImpl implements UserService {
             String userContactNo = user.getContactNo();
             String otp = generateOtp();
             persistOtp(otp, userContactNo);
-            String token = "";
-            messageService.sendSms(userContactNo, String.format("Please use %s as your OTP", otp), token);
+            messageService.sendSms(userContactNo, String.format("Please use %s as your OTP", otp));
             return new UserLoginResponseDto("Please enter the otp sent to your mobile");
         }
     }

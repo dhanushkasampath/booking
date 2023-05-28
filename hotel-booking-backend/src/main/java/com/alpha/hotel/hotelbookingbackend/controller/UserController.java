@@ -5,8 +5,10 @@ import com.alpha.hotel.hotelbookingbackend.dto.UserLoginRequestDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserLoginResponseDto;
 import com.alpha.hotel.hotelbookingbackend.dto.UserOtpRequestDto;
 import com.alpha.hotel.hotelbookingbackend.exception.HotelBookingException;
+import com.alpha.hotel.hotelbookingbackend.exception.ServiceCallException;
 import com.alpha.hotel.hotelbookingbackend.service.UserService;
 import com.alpha.hotel.hotelbookingbackend.util.UserLoginTypeEnum;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +37,7 @@ public class UserController {
             UserLoginTypeEnum userLoginType,
             @Valid
             @RequestBody
-            UserLoginRequestDto userLoginRequestDto, HttpServletRequest request) throws HotelBookingException {
+            UserLoginRequestDto userLoginRequestDto, HttpServletRequest request) throws HotelBookingException, ServiceCallException, JsonProcessingException {
 
         logger.info("Request received to authenticate, username : {} ", userLoginRequestDto.getUserName());
 

@@ -33,18 +33,14 @@ public class HttpServiceImpl<T> implements HttpService<T> {
     private RestTemplate restTemplate;
 
     @Override
-    public String post(String url, HttpHeaders httpHeaders, T body) throws ServiceCallException {
+    public ResponseEntity< String > post(String url, HttpHeaders httpHeaders, T body) throws ServiceCallException {
         return call(getURI(url, null, body), httpHeaders, body, HttpMethod.POST);
     }
 
-    private String call(URI uri, HttpHeaders httpHeaders, T body, HttpMethod httpMethod) throws ServiceCallException {
+    private ResponseEntity< String > call(URI uri, HttpHeaders httpHeaders, T body, HttpMethod httpMethod) throws ServiceCallException {
         try {
             HttpEntity<T> httpEntity = getHttpHeaderEntity(httpHeaders, body);
-            ResponseEntity< String > responseEntity;
-            responseEntity = restTemplate.exchange(uri, httpMethod, httpEntity, String.class);
-            String responseString = responseEntity.getBody();
-            logger.debug("Service call url : {},  response : {}, method : {}", uri, responseString, httpMethod);
-            return responseString;
+            return restTemplate.exchange(uri, httpMethod, httpEntity, String.class);
         }
         catch ( HttpClientErrorException e ) {
             throw new ServiceCallException("Service call error : " + e.getResponseBodyAsString());
